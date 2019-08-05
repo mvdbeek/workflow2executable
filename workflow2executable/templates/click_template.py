@@ -1,0 +1,60 @@
+# -*- coding: utf-8 -*-
+
+import logging
+import click
+import bioblend.galaxy
+
+
+log = logging.Logger(__name__)
+
+
+@click.command("Run {{ workflow.name }} workflow")
+{% for inp in inputs %}
+@click.option("--{{ inp.escaped_variable }}"{% if inp.help %}, help='{{ inp.help }}'{% endif %}, type={{ inp.param_type  }})
+{% endfor %}
+@click.option('-a', '--api_key', help="API key to use for running workflow")
+@click.option('-g', '--galaxy_url', default="https://usegalaxy.org", help="Galaxy URL to use for running workflow", show_default=True)
+@click.option('-h', '--history_id', help="History ID that will contain workflow results")
+@click.option('-n', '--new_history_name', help="Create a new history with this name. Will not be used if history ID is provided.")
+def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, galaxy_url, history_id, new_history_name):
+    """
+    Run {{ workflow.name }} workflow
+    {%if workflow.annotation %}
+
+    {{ workflow.annotation }}
+    {%endif %}
+    """
+    gi = bioblend.galaxy.GalaxyInstance(galaxy_url, api_key)
+    if history_id is None:
+       if new_history_name is None:
+           new_history_name = 'History for {{ workflow.name  }} execution'
+       history_id = gi.histories.create_history(name=new_history_name)['id']
+    # This will look a bit awkward,
+    # those could become custom click types
+    datasets_to_upload = [{{ datasets_to_upload|join(', ') }}]
+    upload_paths = {}
+    for dataset in datasets_to_upload:
+        log.info("Uploading dataset %s", dataset)
+        r = gi.tools.upload_file(path=dataset, history_id=history_id, to_posix_lines=False)
+        upload_paths[dataset] = {'src': 'hda', 'id': r['outputs'][0]['id']}
+    workflow_id = '{{ workflow.id  }}'
+    inputs = {
+        {% for inp in inputs %}
+            '{{ inp.label }}': upload_paths.get({{ inp.escaped_variable }}, {{ inp.escaped_variable }}),
+        {% endfor %}
+    }
+    run_workflow(gi, workflow_id, history_id, inputs)
+
+
+def run_workflow(gi, workflow_id, history_id, inputs):
+    r = gi.workflows.invoke_workflow(
+        workflow_id,
+        inputs=inputs,
+        history_id=history_id,
+        inputs_by='name',
+    )
+    print(r)
+
+
+if __name__ == '__main__':
+    run_{{ workflow.escaped_name }}()
