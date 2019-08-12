@@ -4,6 +4,7 @@ import logging
 import click
 import bioblend.galaxy
 
+from invocations import InvocationMonitor
 
 log = logging.Logger(__name__)
 
@@ -43,7 +44,9 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
             '{{ inp.label }}': upload_paths.get({{ inp.escaped_variable }}, {{ inp.escaped_variable }}),
         {% endfor %}
     }
-    run_workflow(gi, workflow_id, history_id, inputs)
+    invocation = run_workflow(gi, workflow_id, history_id, inputs)
+    im = InvocationMonitor(gi)
+    im.monitor_invocation(invocation['id'])
 
 
 def run_workflow(gi, workflow_id, history_id, inputs):
@@ -53,7 +56,7 @@ def run_workflow(gi, workflow_id, history_id, inputs):
         history_id=history_id,
         inputs_by='name',
     )
-    print(r)
+    return r
 
 
 if __name__ == '__main__':
