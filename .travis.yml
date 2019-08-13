@@ -1,0 +1,15 @@
+language: python
+python:
+- 3.6
+install: pip install -U tox-travis
+script: tox
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: mvdbeek
+  password:
+    secure: bUzfaOqsNgdujMojnWX7R+qBa2yj279j5a7SANvgyReBY+3RLxmc9kn3/6UZ9joa5yKN3gSnEZQl7z2k1Cjv/MH82qxccVogIuNKHiTOYS0v3U+3uehEQ9Cl6nxOj5PnTk7/OGsLCy8luFRPR9iVwzuRB131MlP4tAqx7ayQF32wEBCmEnIo7mD/VH7j7L53fNU7oY5nw9HTJuDvmpA01UWoKShQ+DMDdH/jJgpd5WLLX+SSTsbg1F0nXXJopcMnti9sc9mbm3MpOp5WV5TtlJpnGjH2D3ChyYFTNnjGox8AYLYbNmHUul4ijM/MdK0sSnE/GX8qXeU8VSp5AVPJLw+nJX2rkE2h8C56d1+FMP8KjFGivt1tlFInvbqNhSDD8i6djl7lUC9en65KDCaql7ZFgKnQ0VeGTcfnOJwBq4FaTyeUhWNEmybXwvTEbyf7qlaryaQUut5ZR9J0EIxggqnmeUIlxFVvZKq7VHDOa6Iydze1drG+0Lq52YXa62DYpWaSGEm9ZnjZ8rR6Rd8VLB5zw/I8vy1gPvpfCEbYN9EEokxNgHC33g88vCbSKbtqkQzKViwMU4/u61ErI0PKexLVcAq0HaaCimuycUaIY2EgNJnWolwT3QFlIEO0UykVXKfdu3LsOnQiLJD1BSpb57XGsfTZNcJksr37WtX2WSU=
+  on:
+    tags: true
+    repo: mvdbeek/workflow2executable
+    python: 3.6

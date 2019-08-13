@@ -3,6 +3,9 @@ import time
 
 log = logging.Logger(__name__)
 TERMINAL_STATES = ('ok', 'error',)
+REPORT_TEMPLATE = """Job states for {pretty_label}:
+OK: {n_ok}, Error: {n_error}, Queued: {n_queued}, Running: {n_running}
+"""
 
 
 class StepState(object):
@@ -36,7 +39,7 @@ class StepState(object):
     def pretty_label(self):
         label = "step {order_index}".format(order_index=self.order_index)
         if self.label:
-          label = "{label} - {step_label}".format(label=label, step_label=self.label)
+            label = "{label} - {step_label}".format(label=label, step_label=self.label)
         return label
 
     def report_progress(self):
@@ -53,7 +56,13 @@ class StepState(object):
                 n_running += 1
             if job['state'] == 'queued':
                 n_queued += 1
-        log.warning("Job states for {pretty_label}:\nOK: {n_ok}, Error: {n_error}, Queued: {n_queued}, Running: {n_running}".format(pretty_label=self.pretty_label, n_ok=n_ok, n_error=n_error, n_queued=n_queued, n_running=n_running))
+        log.warning(REPORT_TEMPLATE.format(
+            pretty_label=self.pretty_label,
+            n_ok=n_ok,
+            n_error=n_error,
+            n_queued=n_queued,
+            n_running=n_running)
+        )
 
 
 class InvocationMonitor(object):
