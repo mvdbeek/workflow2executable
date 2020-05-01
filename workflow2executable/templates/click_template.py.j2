@@ -17,7 +17,8 @@ log = logging.Logger(__name__)
 @click.option('-g', '--galaxy_url', default="https://usegalaxy.org", help="Galaxy URL to use for running workflow", show_default=True)
 @click.option('-h', '--history_id', help="History ID that will contain workflow results")
 @click.option('-n', '--new_history_name', help="Create a new history with this name. Will not be used if history ID is provided.")
-def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, galaxy_url, history_id, new_history_name):
+@click.option('--publish/--private', default=False, help="Publish history?")
+def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, galaxy_url, history_id, new_history_name, publish):
     """
     Run {{ workflow.name }} workflow
     {%if workflow.annotation %}
@@ -30,6 +31,8 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
        if new_history_name is None:
            new_history_name = 'History for {{ workflow.name  }} execution'
        history_id = gi.histories.create_history(name=new_history_name)['id']
+    if publish:
+        gi.histories.update_history(history_id, published=True, importable=True)
     # This will look a bit awkward,
     # those could become custom click types
     datasets_to_upload = [{{ datasets_to_upload|join(', ') }}]
@@ -38,7 +41,7 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
         log.info("Uploading dataset %s", dataset)
         r = gi.tools.upload_file(path=dataset, history_id=history_id, to_posix_lines=False)
         upload_paths[dataset] = {'src': 'hda', 'id': r['outputs'][0]['id']}
-    workflow_id = '{{ workflow.id  }}'
+    workflow_id = '{{ workflow.latest_workflow_uuid  }}'
     inputs = {
         {% for inp in inputs %}
             '{{ inp.label }}': upload_paths.get({{ inp.escaped_variable }}, {{ inp.escaped_variable }}),
