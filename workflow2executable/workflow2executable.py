@@ -1,6 +1,8 @@
+import json
 import re
 
 import bioblend.galaxy
+import requests
 from jinja2 import (
     Environment,
     PackageLoader,
@@ -25,7 +27,7 @@ def get_template():
     return env.get_template('click_template.py.j2')
 
 
-def workflow2executable(workflow_id, galaxy_url='https://usegalaxy.org', api_key=None, script_path=None):
+def workflow2executable(workflow_id, galaxy_url='https://usegalaxy.org', api_key=None, script_path=None, embedd_workflow=False):
     if api_key:
         gi_args = (galaxy_url, api_key)
     else:
@@ -56,6 +58,8 @@ def workflow2executable(workflow_id, galaxy_url='https://usegalaxy.org', api_key
         'input_variables': input_variables,
         'datasets_to_upload': datasets_to_upload,
     }
+    if embedd_workflow:
+        template_vars['full_workflow'] = requests.get("%s/%s" % (gi.base_url, "workflow/export_to_file?id=%s" % workflow_id)).json()
     template = get_template()
     script = template.render(template_vars)
     if script_path is not None:

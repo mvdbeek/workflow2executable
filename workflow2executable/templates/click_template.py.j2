@@ -15,6 +15,12 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 log.addHandler(ch)
 
+{%if full_workflow %}
+FULL_WORKFLOW = {{ full_workflow }}
+{% else %}
+FULL_WORKFLOW = None
+{%endif %}
+
 
 @click.command("Run {{ workflow.name }} workflow")
 {% for inp in inputs %}
@@ -38,6 +44,20 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
     if quiet:
         log.setLevel(logging.ERROR)
     gi = bioblend.galaxy.GalaxyInstance(galaxy_url, api_key)
+    workflow_id = '{{ workflow.latest_workflow_uuid  }}'
+    workflow_found = True
+    try:
+        gi.workflows.show_workflow(workflow_id)
+    except Exception as e:
+        if "No such workflow" in str(e):
+            workflow_found = False
+        else:
+            raise e
+    if not workflow_found and FULL_WORKFLOW:
+        gi.workflows.import_workflow_dict(FULL_WORKFLOW)
+        log.info("Imported workflow")
+    else:
+        raise Exception("Workflow with id '%s' not uploaded or not accessible" % workflow_id)
     if history_id is None:
         if new_history_name is None:
             new_history_name = 'History for {{ workflow.name  }} execution'
@@ -58,7 +78,6 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
         log.info("Uploading dataset '%s' to history %s", dataset, history_url)
         r = gi.tools.upload_file(path=dataset, history_id=history_id, to_posix_lines=False)
         upload_paths[dataset] = {'src': 'hda', 'id': r['outputs'][0]['id']}
-    workflow_id = '{{ workflow.latest_workflow_uuid  }}'
     inputs = {
     {% for inp in inputs %}
         '{{ inp.label }}': upload_paths.get({{ inp.escaped_variable }}, {{ inp.escaped_variable }}),
