@@ -53,11 +53,12 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
             workflow_found = False
         else:
             raise e
-    if not workflow_found and FULL_WORKFLOW:
-        gi.workflows.import_workflow_dict(FULL_WORKFLOW)
-        log.info("Imported workflow")
-    else:
-        raise Exception("Workflow with id '%s' not uploaded or not accessible" % workflow_id)
+    if not workflow_found:
+        if FULL_WORKFLOW:
+            gi.workflows.import_workflow_dict(FULL_WORKFLOW)
+            log.info("Imported workflow")
+        else:
+            raise Exception("Workflow with id '%s' not uploaded or not accessible" % workflow_id)
     if history_id is None:
         if new_history_name is None:
             new_history_name = 'History for {{ workflow.name  }} execution'
