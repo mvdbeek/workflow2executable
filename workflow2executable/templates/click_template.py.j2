@@ -45,15 +45,9 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
         log.setLevel(logging.ERROR)
     gi = bioblend.galaxy.GalaxyInstance(galaxy_url, api_key)
     workflow_id = '{{ workflow.latest_workflow_uuid  }}'
-    workflow_found = True
     try:
         gi.workflows.show_workflow(workflow_id)
-    except Exception as e:
-        if "No such workflow" in str(e):
-            workflow_found = False
-        else:
-            raise e
-    if not workflow_found:
+    except Exception:
         if FULL_WORKFLOW:
             gi.workflows.import_workflow_dict(FULL_WORKFLOW)
             log.info("Imported workflow")
