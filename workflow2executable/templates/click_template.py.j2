@@ -32,8 +32,9 @@ FULL_WORKFLOW = None
 @click.option('-n', '--new_history_name', help="Create a new history with this name. Will not be used if history ID is provided.")
 @click.option('--publish/--private', default=False, help="Publish history?")
 @click.option('--monitor_invocation/--no_monitor_invocation', default=False, help="Print workflow invocation status updates?")
+@click.option('--workflow_id_override', default=None, help="Override workflow to run with this workflow id or uuid")
 @click.option('--quiet', default=False, help='Decrease logging output')
-def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, galaxy_url, history_id, new_history_name, publish, monitor_invocation, quiet):
+def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, galaxy_url, history_id, new_history_name, publish, monitor_invocation, workflow_id_override, quiet):
     """
     Run {{ workflow.name }} workflow
     {%if workflow.annotation %}
@@ -44,7 +45,7 @@ def run_{{ workflow.escaped_name }}({{ input_variables|join(', ') }}, api_key, g
     if quiet:
         log.setLevel(logging.ERROR)
     gi = bioblend.galaxy.GalaxyInstance(galaxy_url, api_key)
-    workflow_id = '{{ workflow.latest_workflow_uuid  }}'
+    workflow_id = workflow_id_override or '{{ workflow.latest_workflow_uuid  }}'
     try:
         gi.workflows.show_workflow(workflow_id)
     except Exception:
