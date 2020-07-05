@@ -1,4 +1,3 @@
-import json
 import re
 
 import bioblend.galaxy
@@ -61,9 +60,11 @@ def workflow2executable(workflow_id, galaxy_url='https://usegalaxy.org', api_key
     if embedd_workflow:
         if not api_key:
             # public
-            template_vars['full_workflow'] = requests.get("%s/%s" % (gi.base_url, "workflow/export_to_file?id=%s" % workflow_id)).json()
+            r = requests.get("%s/%s" % (gi.base_url, "workflow/export_to_file?id=%s" % workflow_id))
+            r.raise_for_status()
+            template_vars['full_workflow'] = r.json()
         else:
-            template_vars = gi.workflows.export_workflow_dict(workflow_id)
+            template_vars['full_workflow'] = gi.workflows.export_workflow_dict(workflow_id)
     template = get_template()
     script = template.render(template_vars)
     if script_path is not None:
