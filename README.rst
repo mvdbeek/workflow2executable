@@ -25,9 +25,7 @@ Turn Galaxy Workflows into standalone scripts.
 Turn Galaxy Workflows into standalone scripts.
 ----------------------------------------------
 
-Totally not ready. Works only with regular dataset inputs
-and needs https://github.com/galaxyproject/bioblend/pull/294
-to work. Might ultimately fit better into planemo.
+Works only with regular dataset inputs for now. Might ultimately fit better into planemo.
 
 
 The basic idea is that a workflow with completely defined input section
@@ -57,12 +55,21 @@ Useage can be seen with
     -a, --api_key TEXT              API key to use for running workflow
     -g, --galaxy_url TEXT           Galaxy URL to use for running workflow
                                     [default: https://usegalaxy.org]
+  
     -h, --history_id TEXT           History ID that will contain workflow
                                     results
+  
     -n, --new_history_name TEXT     Create a new history with this name. Will
                                     not be used if history ID is provided.
+  
+    --publish / --private           Publish history?
+    --monitor_invocation / --no_monitor_invocation
+                                    Print workflow invocation status updates?
+    --workflow_id_override TEXT     Override workflow to run with this workflow
+                                    id or uuid
+  
+    --quiet TEXT                    Decrease logging output
     --help                          Show this message and exit.
-
 
 Credits
 -------
